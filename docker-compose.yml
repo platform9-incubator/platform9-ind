@@ -1,0 +1,32 @@
+version: '3'
+services:
+  hack13-1:
+    build: .
+    container_name: hack13-1
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+    tmpfs: /run
+    privileged: true
+    env_file: ./env
+    environment:
+      container: docker
+  hack13-2:
+    build: .
+    container_name: hack13-2
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+    tmpfs: /run
+    privileged: true
+    env_file: ./env
+    environment:
+      container: docker
+  hack13-3:
+    build: .
+    container_name: hack13-3
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+    tmpfs: /run
+    privileged: true
+    env_file: ./env
+    environment:
+      container: docker
