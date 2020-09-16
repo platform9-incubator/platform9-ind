@@ -23,7 +23,12 @@ mkdir -p /etc/pf9/
 echo 'export PF9_MANAGED_DOCKER="false"' >> /etc/pf9/kube_override.env
 chown -R pf9:pf9group /etc/pf9/
 ln -s /usr/local/bin/docker /usr/bin/docker
-
+systemctl daemon-reload
+systemctl start docker.service
+sleep 2
+chmod 777 /var/run/docker.sock
+echo 'echo permissive' > /usr/local/bin/getenforce
+chmod 777 /usr/local/bin/getenforce
 
 ## Download and run the latest PF9 CLI
 curl -OL http://pf9.io/get_cli
@@ -46,6 +51,7 @@ sed -i -e '$ d' ${FILE_TO_PATCH}
 function patch_pmk_files() {
     sed 's|swapStat="{ \\"enabled\\": \\"true\\" }"|swapStat="{ \\"enabled\\": \\"false\\" }"|' /opt/pf9/pf9-kube/diagnostics_utils/node_check.sh -i
     sed -e '/check_swap_disabled/ s/^#*/#/' /opt/pf9/pf9-kube/base_scripts/gen_certs.sh -i
+    sed '/^clusterDomain:.*/a failSwapOn: false' /opt/pf9/pf9-kube/utils.sh -i
 }
 
 patch_pmk_files

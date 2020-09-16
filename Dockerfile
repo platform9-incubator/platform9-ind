@@ -28,6 +28,7 @@ tar --extract \
 rm docker.tgz; \
 mkdir -p /var/lib/docker/network/files/;
 
+COPY docker.service /lib/systemd/system/docker.service
 COPY dind /dind
 COPY docker-entrypoint.sh /usr/local/bin/
 COPY modprobe.sh /usr/local/bin/modprobe
