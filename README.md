@@ -11,8 +11,15 @@ PF9USER=<USERNAME>
 PF9PASS=<PASSWORD>
 ```
 
-### Running the container host
+## 2 ways to create the nodes:
+### 1. Running a single container host
 
 ```
 docker run -d --rm -ti -e=container=docker  -v /sys/fs/cgroup:/sys/fs/cgroup:ro --tmpfs /run --privileged=True --memory 1g --memory-swap 0 --name hack13 --env-file ./env centos7-dind
+```
+
+### 2. Prepping 3 Nodes with docker-compose
+
+```
+docker-compose up
 ```
