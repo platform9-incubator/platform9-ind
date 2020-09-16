@@ -15,6 +15,16 @@ export LC_TELEPHONE="en_US.UTF-8"
 export LC_MEASUREMENT="en_US.UTF-8"
 export LC_IDENTIFICATION="en_US.UTF-8"
 
+## This has to be done first to prevent PF9 components from changing docker config
+adduser pf9
+groupadd pf9group
+usermod -a -G pf9group pf9
+mkdir -p /etc/pf9/
+echo 'export PF9_MANAGED_DOCKER="false"' >> /etc/pf9/kube_override.env
+chown -R pf9:pf9group /etc/pf9/
+ln -s /usr/local/bin/docker /usr/bin/docker
+
+
 ## Download and run the latest PF9 CLI
 curl -OL http://pf9.io/get_cli
 chmod +x get_cli
@@ -33,10 +43,9 @@ sed -i -e '$ d' ${FILE_TO_PATCH}
 ## Node is ready to be added to cluster
 ## Patch more files to ignore swap on
 
-func patch_pmk_files() {
+function patch_pmk_files() {
     sed 's|swapStat="{ \\"enabled\\": \\"true\\" }"|swapStat="{ \\"enabled\\": \\"false\\" }"|' /opt/pf9/pf9-kube/diagnostics_utils/node_check.sh -i
     sed -e '/check_swap_disabled/ s/^#*/#/' /opt/pf9/pf9-kube/base_scripts/gen_certs.sh -i
-    echo 'export PF9_MANAGED_DOCKER="false"' >> /etc/pf9/kube_override.env
 }
 
 patch_pmk_files
