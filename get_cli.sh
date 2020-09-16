@@ -33,7 +33,7 @@ sed -i -e '$ d' ${FILE_TO_PATCH}
 ## Node is ready to be added to cluster
 ## Patch more files to ignore swap on
 
-func patch_pmk_files() {
+patch_pmk_files() {
     sed 's|swapStat="{ \\"enabled\\": \\"true\\" }"|swapStat="{ \\"enabled\\": \\"false\\" }"|' /opt/pf9/pf9-kube/diagnostics_utils/node_check.sh -i
     sed -e '/check_swap_disabled/ s/^#*/#/' /opt/pf9/pf9-kube/base_scripts/gen_certs.sh -i
     echo 'export PF9_MANAGED_DOCKER="false"' >> /etc/pf9/kube_override.env
