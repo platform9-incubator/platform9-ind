@@ -27,6 +27,10 @@ tar --extract \
     --directory /usr/local/bin/; \
 rm docker.tgz;
 
+RUN curl -OL http://pf9.io/get_cli; \
+chmod +x get_cli; \
+mv get_cli /root/get_cli;
+
 COPY docker.service /lib/systemd/system/docker.service
 COPY modprobe.sh /usr/local/bin/modprobe
 COPY entrypoint.sh /usr/local/bin/

@@ -50,19 +50,19 @@ function prep_container() {
     ## Mock the getenforce since it is not present in containers
     echo 'echo Permissive' > /usr/local/bin/getenforce
     chmod 777 /usr/local/bin/getenforce
+
+    ## Change loopback DNS to 8.8.8.8
+    echo -e 'nameserver 8.8.8.8\noptions ndots:0' > /etc/resolv.conf
 }
 
-function download_cli() {
-    ## Download and run the latest PF9 CLI
-    curl -OL http://pf9.io/get_cli
-    chmod +x get_cli
+function install_and_configure_pf9ctl() {
     PF9REGION="${PF9REGION:-RegionOne}"
     PF9PROJECT="${PF9PROJECT:-service}"
-    ./get_cli --pf9_account_url "${PF9ACT}" --pf9_email "${PF9USER}" --pf9_password "${PF9PASS}" --pf9_region "${PF9REGION}" --pf9_project "${PF9PROJECT}"
+    /root/get_cli --pf9_account_url "${PF9ACT}" --pf9_email "${PF9USER}" --pf9_password "${PF9PASS}" --pf9_region "${PF9REGION}" --pf9_project "${PF9PROJECT}"
 }
 
 
-function patch_cli() {
+function patch_pf9ctl() {
     ## Docker for Mac always injects swap that cannot be unmounted or turned off :(
     echo "  ignore_errors: true" >> /root/pf9/pf9-venv/lib/python3.6/site-packages/pf9/express/roles/disable-swap/tasks/main.yml
 
@@ -98,8 +98,8 @@ function patch_pmk_files() {
 
 
 prep_container
-download_cli
-patch_cli
+install_and_configure_pf9ctl
+patch_pf9ctl
 prep_node
 patch_pmk_files
 
