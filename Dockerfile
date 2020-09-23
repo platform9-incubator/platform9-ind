@@ -18,6 +18,8 @@ rm -f /lib/systemd/system/sockets.target.wants/*initctl*; \
 rm -f /lib/systemd/system/basic.target.wants/*;\
 rm -f /lib/systemd/system/anaconda.target.wants/*;\
 rm -f /usr/lib/tmpfiles.d/systemd-nologin.conf;
+
+# Download a specific version of docker
 RUN wget https://download.docker.com/linux/static/stable/x86_64/docker-19.03.12.tgz -O docker.tgz; \
 tar --extract \
     --file docker.tgz \

@@ -20,8 +20,8 @@ PF9PROJECT=<PROJECT_NAME|Default:service>
 docker run -d --rm -ti -e=container=docker  -v /sys/fs/cgroup:/sys/fs/cgroup:ro --tmpfs /run --privileged=True --memory 1g --memory-swap 0 --name hack13 --env-file ./env centos7-dind
 ```
 
-### 2. Prepping 3 Nodes with docker-compose
+### 2. Prepping N Nodes with docker-compose
 
 ```
-docker-compose up
+docker-compose --compatibility up --detach --scale pmk-node=<N>
 ```

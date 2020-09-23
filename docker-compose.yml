@@ -1,9 +1,8 @@
 version: '3'
 services:
-  hack13-1:
+  pmk-node:
     build: .
-    image: centos7-dind
-    container_name: hack13-1
+    image: centos7-pind
     volumes:
       - /sys/fs/cgroup:/sys/fs/cgroup:ro
     tmpfs: /run
@@ -11,23 +10,8 @@ services:
     env_file: ./env
     environment:
       container: docker
-  hack13-2:
-    image: centos7-dind
-    container_name: hack13-2
-    volumes:
-      - /sys/fs/cgroup:/sys/fs/cgroup:ro
-    tmpfs: /run
-    privileged: true
-    env_file: ./env
-    environment:
-      container: docker
-  hack13-3:
-    image: centos7-dind
-    container_name: hack13-3
-    volumes:
-      - /sys/fs/cgroup:/sys/fs/cgroup:ro
-    tmpfs: /run
-    privileged: true
-    env_file: ./env
-    environment:
-      container: docker
+    deploy:
+      resources:
+        limits:
+          cpus: 2
+          memory: "3072M"
