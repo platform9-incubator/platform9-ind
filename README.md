@@ -9,6 +9,8 @@
 PF9ACT=https://<DU_FQDN>
 PF9USER=<USERNAME>
 PF9PASS=<PASSWORD>
+PF9REGION=<REGION|Default:RegionOne>
+PF9PROJECT=<PROJECT_NAME|Default:service>
 ```
 
 ## 2 ways to create the nodes:

@@ -15,47 +15,68 @@ export LC_TELEPHONE="en_US.UTF-8"
 export LC_MEASUREMENT="en_US.UTF-8"
 export LC_IDENTIFICATION="en_US.UTF-8"
 
-## Create the pf9 user to chown the files
-adduser pf9
-groupadd pf9group
-usermod -a -G pf9group pf9
-groupadd docker
-usermod -a -G docker pf9
+function prep_container() {
+    ## Create the pf9 user to chown the files
+    adduser pf9
+    groupadd pf9group
+    usermod -a -G pf9group pf9
+    groupadd docker
+    usermod -a -G docker pf9
+    
+    ## This has to be done first to prevent PF9 components from changing docker config
+    mkdir -p /etc/pf9/
+    echo 'export PF9_MANAGED_DOCKER="false"' >> /etc/pf9/kube_override.env
+    chown -R pf9:pf9group /etc/pf9/
+    
+    ## PMK scripts expect the docker binary to be at /usr/bin/docker
+    ln -s /usr/local/bin/docker /usr/bin/docker
 
-## This has to be done first to prevent PF9 components from changing docker config
-mkdir -p /etc/pf9/
-echo 'export PF9_MANAGED_DOCKER="false"' >> /etc/pf9/kube_override.env
-chown -R pf9:pf9group /etc/pf9/
+    ## Make sure the docker directories are present prior to starting docker daemon
+    mkdir -p /var/lib/docker/network/files
 
-## PMK scripts expect the docker binary to be at /usr/bin/docker
-ln -s /usr/local/bin/docker /usr/bin/docker
+    ## Explicitly set the storage-driver to vfs
+    ## vfs driver works with all host OS (based on trial and error)
+    mkdir -p /etc/docker
+    echo '{"storage-driver": "vfs"}' > /etc/docker/daemon.json
+    
+    ## PMK scripts will check `systemctl is-active docker` so start dockerd from systemd unit
+    systemctl daemon-reload
+    systemctl start docker.service
+    sleep 2
+    
+    ## Need to figure out why pf9 user is not able to access this socket otherwise
+    chmod 777 /var/run/docker.sock
+    
+    ## Mock the getenforce since it is not present in containers
+    echo 'echo Permissive' > /usr/local/bin/getenforce
+    chmod 777 /usr/local/bin/getenforce
+}
 
-## PMK scripts will check `systemctl is-active docker` so start dockerd from systemd unit
-systemctl daemon-reload
-systemctl start docker.service
-sleep 2
+function download_cli() {
+    ## Download and run the latest PF9 CLI
+    curl -OL http://pf9.io/get_cli
+    chmod +x get_cli
+    PF9REGION="${PF9REGION:-RegionOne}"
+    PF9PROJECT="${PF9PROJECT:-service}"
+    ./get_cli --pf9_account_url "${PF9ACT}" --pf9_email "${PF9USER}" --pf9_password "${PF9PASS}" --pf9_region "${PF9REGION}" --pf9_project "${PF9PROJECT}"
+}
 
-## Need to figure out why pf9 user is not able to access this socket otherwise
-chmod 777 /var/run/docker.sock
 
-## Mock the getenforce since it is not present in containers
-echo 'echo Permissive' > /usr/bin/getenforce
-chmod 777 /usr/local/bin/getenforce
+function patch_cli() {
+    ## Docker for Mac always injects swap that cannot be unmounted or turned off :(
+    echo "  ignore_errors: true" >> /root/pf9/pf9-venv/lib/python3.6/site-packages/pf9/express/roles/disable-swap/tasks/main.yml
 
-## Download and run the latest PF9 CLI
-curl -OL http://pf9.io/get_cli
-chmod +x get_cli
-./get_cli --pf9_account_url "${PF9ACT}" --pf9_email "${PF9USER}" --pf9_password "${PF9PASS}" --pf9_region RegionOne --pf9_project service
+    ## We are installing python3.6 but CLI does not fully support python3 yet
+    for file in /root/pf9/pf9-venv/lib/python3.6/site-packages/pf9/express/roles/ntp/tasks/main.yml /root/pf9/pf9-venv/lib/python3.6/site-packages/pf9/express/roles/common/tasks/redhat.yml; do
+        sed '/^- name: Install .*/a\  vars:\n    ansible_python_interpreter: \/usr\/bin\/python' $file -i
+    done
+}
 
-## Docker for Mac always injects swap that cannot be unmounted or turned off :(
-FILE_TO_PATCH=/root/pf9/pf9-venv/lib/python2.7/site-packages/pf9/express/roles/disable-swap/tasks/main.yml
-echo "  ignore_errors: true" >> ${FILE_TO_PATCH}
+function prep_node() {
+    echo 'y
 
-echo 'y
-
-' | pf9ctl cluster prep-node
-
-sed -i -e '$ d' ${FILE_TO_PATCH}
+    ' | pf9ctl cluster prep-node
+}
 
 function patch_pmk_files() {
     ## Unconditionally return that swap is turned off from the tackboard script
@@ -75,7 +96,11 @@ function patch_pmk_files() {
     sed 's|ret=`getenforce`|ret="Permissive"|' /opt/pf9/pf9-kube/os_centos.sh -i
 }
 
+
+prep_container
+download_cli
+patch_cli
+prep_node
 patch_pmk_files
 
-## Node is ready to be added to cluster
 echo "Node is ready to be added to k8s cluster at ${PF9ACT}"

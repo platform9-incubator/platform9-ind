@@ -1,9 +1,9 @@
 #!/bin/sh
 
-mkdir -p /var/lib/docker/network/files
+# This script must sleep 10-20s so that system gets initialized
+setsid /get_cli.sh $@ &
 
-# setsid /dind dockerd > /var/log/dockerd.log & 2>&1
-
-setsid /get_cli.sh &
-
+# Initialize systemd and init
+# NOTE: THIS CANNOT RUN IN BACKGROUND
+mkdir -p /run/systemd/system
 exec /usr/sbin/init
