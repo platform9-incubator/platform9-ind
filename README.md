@@ -14,6 +14,7 @@ PF9PROJECT=<PROJECT_NAME|Default:service>
 Pre-requisites: docker desktop (docker and docker-compose commands are needed)
 
 ### 1. Download the necessary images
+This needs to be done just once.
 ```
 mkdir -p container_images
 docker pull gcr.io/google_containers/hyperkube:v1.17.9
@@ -27,6 +28,8 @@ The docker-compose file is configured with minimum required CPU and memory for a
 ```
 docker-compose --compatibility up --detach --scale pmk-node=<N>
 ```
+
+NOTE: If `make` is installed on mac, you can follow the steps listed for linux.
 
 ## To run on linux
 
