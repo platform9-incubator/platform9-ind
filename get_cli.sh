@@ -15,6 +15,15 @@ export LC_TELEPHONE="en_US.UTF-8"
 export LC_MEASUREMENT="en_US.UTF-8"
 export LC_IDENTIFICATION="en_US.UTF-8"
 
+function load_container_images() {
+    files=/container_images/*.tar
+    if [ -d /container_images ]; then
+        for file in $files; do
+            docker load -i $file
+        done
+    fi
+}
+
 function prep_container() {
     ## Create the pf9 user to chown the files
     adduser pf9
@@ -53,10 +62,6 @@ function prep_container() {
 
     ## Change loopback DNS to 8.8.8.8
     echo -e 'nameserver 8.8.8.8\noptions ndots:0' > /etc/resolv.conf
-
-    if [ -f /container_images/hyperkube.tar ]; then
-        docker load -i container_images/hyperkube.tar
-    fi
 }
 
 function install_and_configure_pf9ctl() {
@@ -100,7 +105,7 @@ function patch_pmk_files() {
     sed 's|ret=`getenforce`|ret="Permissive"|' /opt/pf9/pf9-kube/os_centos.sh -i
 }
 
-
+load_container_images &
 prep_container
 install_and_configure_pf9ctl
 patch_pf9ctl

@@ -1,10 +1,10 @@
-NUM_CONTAINERS=${NUM_CONTAINERS:-1}
+NUM_CONTAINERS?=1
+IMAGES=$(shell cat images_to_download)
 .PHONY: run clean build
 
 container_images/hyperkube.tar:
 	mkdir -p container_images
-	docker pull gcr.io/google_containers/hyperkube:v1.17.9
-	docker save gcr.io/google_containers/hyperkube -o container_images/hyperkube.tar
+	for image in ${IMAGES}; do docker pull $${image}; imgname=$${image%\:*}; filename=$${imgname##*\/}; docker save $${imgname} -o container_images/$${filename}.tar ; done
 
 build:
 	docker-compose build
@@ -14,3 +14,7 @@ run: container_images/hyperkube.tar build
 
 clean:
 	docker-compose down
+	rm -f container_images/*
+
+clean-all: clean
+	docker image prune
