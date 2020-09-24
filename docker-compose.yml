@@ -5,6 +5,9 @@ services:
     image: centos7-pind
     volumes:
       - /sys/fs/cgroup:/sys/fs/cgroup:ro
+      - type: bind
+        source: ./container_images
+        target: /container_images
     tmpfs: /run
     privileged: true
     env_file: ./env

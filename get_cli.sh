@@ -53,6 +53,10 @@ function prep_container() {
 
     ## Change loopback DNS to 8.8.8.8
     echo -e 'nameserver 8.8.8.8\noptions ndots:0' > /etc/resolv.conf
+
+    if [ -f /container_images/hyperkube.tar ]; then
+        docker load -i container_images/hyperkube.tar
+    fi
 }
 
 function install_and_configure_pf9ctl() {

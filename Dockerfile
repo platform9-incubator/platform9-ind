@@ -1,6 +1,6 @@
 FROM centos:centos7
 
-RUN yum install -y https://repo.ius.io/ius-release-el7.rpm; yum -y update; yum clean all; yum -y install wget vim lvm2 openssl strace systemd which sudo initscripts python36u; yum clean all;
+RUN yum install -y https://repo.ius.io/ius-release-el7.rpm; yum -y update; yum clean all; yum -y install wget vim lvm2 openssl strace systemd which sudo initscripts python36u htop; yum clean all;
 RUN dbus-uuidgen > /var/lib/dbus/machine-id && mkdir -p /var/run/dbus && dbus-daemon --config-file=/usr/share/dbus-1/system.conf --print-address
 
 STOPSIGNAL SIGRTMIN+3
@@ -37,5 +37,5 @@ COPY entrypoint.sh /usr/local/bin/
 COPY get_cli.sh /get_cli.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh /get_cli.sh
 
-VOLUME [ "/sys/fs/cgroup" ]
+VOLUME [ "/sys/fs/cgroup", "/container_images" ]
 ENTRYPOINT ["entrypoint.sh"]
