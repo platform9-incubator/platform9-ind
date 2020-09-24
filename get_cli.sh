@@ -16,6 +16,7 @@ export LC_MEASUREMENT="en_US.UTF-8"
 export LC_IDENTIFICATION="en_US.UTF-8"
 
 function load_container_images() {
+    echo "Loading the required docker container images"
     files=/container_images/*.tar
     if [ -d /container_images ]; then
         for file in $files; do
@@ -105,11 +106,11 @@ function patch_pmk_files() {
     sed 's|ret=`getenforce`|ret="Permissive"|' /opt/pf9/pf9-kube/os_centos.sh -i
 }
 
-load_container_images &
 prep_container
 install_and_configure_pf9ctl
 patch_pf9ctl
 prep_node
 patch_pmk_files
+load_container_images
 
 echo "Node is ready to be added to k8s cluster at ${PF9ACT}"
