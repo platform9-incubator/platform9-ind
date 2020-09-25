@@ -63,6 +63,9 @@ function prep_container() {
 
     ## Change loopback DNS to 8.8.8.8
     echo -e 'nameserver 8.8.8.8\noptions ndots:0' > /etc/resolv.conf
+
+    ## Needed for this to work on df, containers still work when deployed locally on Mac.
+    ip link set dev eth0 mtu 1400
 }
 
 function install_and_configure_pf9ctl() {
