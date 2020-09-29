@@ -1,6 +1,6 @@
 FROM centos:centos7
 
-RUN yum install -y https://repo.ius.io/ius-release-el7.rpm; yum -y update; yum clean all; yum -y install wget vim lvm2 openssl strace systemd which sudo initscripts python36u htop; yum clean all;
+RUN yum install -y https://repo.ius.io/ius-release-el7.rpm; yum -y update; yum clean all; yum -y install git wget vim lvm2 openssl strace systemd which sudo initscripts python36u htop; yum clean all;
 RUN dbus-uuidgen > /var/lib/dbus/machine-id && mkdir -p /var/run/dbus && dbus-daemon --config-file=/usr/share/dbus-1/system.conf --print-address
 
 STOPSIGNAL SIGRTMIN+3
@@ -29,7 +29,16 @@ rm docker.tgz;
 
 RUN curl -OL http://pf9.io/get_cli; \
 chmod +x get_cli; \
-mv get_cli /root/get_cli;
+mv get_cli /root/get_cli; \
+mkdir -p /root/local/agent /root/local/nodelet;
+
+# Install go and delve
+RUN curl -O https://dl.google.com/go/go1.13.3.linux-amd64.tar.gz; \
+sudo tar -C /usr/local -xzf go1.13.3.linux-amd64.tar.gz; \
+mkdir -p ~/go; echo "export GOPATH=$HOME/go" >> ~/.bashrc; \
+echo "export PATH=$PATH:$HOME/go/bin:/usr/local/go/bin" >> ~/.bashrc; \
+source ~/.bashrc; \
+go get -u github.com/go-delve/delve/cmd/dlv;
 
 COPY docker.service /lib/systemd/system/docker.service
 COPY modprobe.sh /usr/local/bin/modprobe

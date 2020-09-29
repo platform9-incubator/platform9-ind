@@ -12,6 +12,12 @@ build:
 run: container_images/hyperkube.tar build
 	docker-compose --compatibility up --detach --scale pmk-node=${NUM_CONTAINERS}
 
+dev-build:
+	make -C ../pf9-qbert nodelet
+
+dev: container_images/hyperkube.tar dev-build
+	docker-compose --compatibility -f docker-compose.yml -f docker-compose.dev.yml up --detach --scale pmk-node=${NUM_CONTAINERS}
+
 clean:
 	docker-compose down
 	rm -f container_images/*

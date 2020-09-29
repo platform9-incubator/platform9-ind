@@ -12,6 +12,7 @@ PF9PROJECT=<PROJECT_NAME|Default:service>
 ## To run on Mac
 
 Pre-requisites: docker desktop (docker and docker-compose >1.27.2 commands are needed)
+Recommended: make (available once xcode command line tools are installed for xcode > 4.3)
 
 ### 1. Download the necessary images
 This needs to be done just once.
@@ -30,11 +31,24 @@ The docker-compose file is configured with minimum required CPU and memory for a
 docker-compose --compatibility up --detach --scale pmk-node=<N>
 ```
 
+### To start container with custom pf9-qbert repo
+Above steps will create the containerized hosts with pf9-kube RPM available in the DU. If you want to use a custom codebase, please follow these steps -
+1. Check out pf9-qbert along side this repo.
+2. Create the nodelet binary
+```
+cd pf9-qbert
+make nodelet
+```
+3. Start the container in "dev" mode
+```
+docker-compose --compatibility -f docker-compose.yml -f docker-compose.dev.yml up --detach --scale pmk-node=<N>
+```
+
 NOTE: If `make` is installed on mac, you can follow the steps listed for linux.
 
 ## To run on linux
 
-Pre-requisites: docker and docker-compose >1.27.2 commands must be available
+Pre-requisites: docker, docker-compose >1.27.2, make
 
 ### Download right version of docker-compose
 ```
@@ -46,6 +60,15 @@ sudo chmod +x /usr/local/bin/docker-compose
 ```
 export NUM_CONTAINERS=<N>
 make run
+```
+
+### To start container with custom pf9-qbert repo
+Above steps will create the containerized hosts with pf9-kube RPM available in the DU. If you want to use a custom codebase, please follow these steps -
+1. Check out pf9-qbert along side this repo.
+2. Start the container in "dev" mode
+```
+export NUM_CONTAINERS=<N>
+make dev
 ```
 
 ## System requirements
