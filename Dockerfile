@@ -29,7 +29,16 @@ rm docker.tgz;
 
 RUN curl -OL http://pf9.io/get_cli; \
 chmod +x get_cli; \
-mv get_cli /root/get_cli;
+mv get_cli /root/get_cli; \
+mkdir -p /root/local/agent /root/local/nodelet;
+
+# Install go and delve
+RUN curl -O https://dl.google.com/go/go1.13.3.linux-amd64.tar.gz; \
+sudo tar -C /usr/local -xzf go1.13.3.linux-amd64.tar.gz; \
+mkdir -p ~/go; echo "export GOPATH=$HOME/go" >> ~/.bashrc; \
+echo "export PATH=$PATH:$HOME/go/bin:/usr/local/go/bin" >> ~/.bashrc; \
+source ~/.bashrc; \
+go get -u github.com/go-delve/delve/cmd/dlv;
 
 COPY docker.service /lib/systemd/system/docker.service
 COPY modprobe.sh /usr/local/bin/modprobe

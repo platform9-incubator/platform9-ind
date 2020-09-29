@@ -109,11 +109,18 @@ function patch_pmk_files() {
     sed 's|ret=`getenforce`|ret="Permissive"|' /opt/pf9/pf9-kube/os_centos.sh -i
 }
 
+setup_dev_if_necessary() {
+    if [ "x${DEV}" != "x" ]; then
+        ## copy files as needed
+    fi
+}
+
 prep_container
 install_and_configure_pf9ctl
 patch_pf9ctl
 prep_node
 patch_pmk_files
+setup_dev_if_necessary &
 load_container_images
 
 echo "Node is ready to be added to k8s cluster at ${PF9ACT}"
