@@ -111,7 +111,13 @@ function patch_pmk_files() {
 
 setup_dev_if_necessary() {
     if [ "x${DEV}" != "x" ]; then
-        echo "copy files as needed"
+        echo "DEV is enabled, so stopping services and patching files"
+        systemctl stop pf9-hostagent.service
+        systemctl stop pf9-nodeletd.service
+        yes | cp /root/local/nodelet/nodeletd /opt/pf9/nodelet/nodeletd
+        yes | cp -Rf /root/local/agent/root/opt/pf9/pf9-kube/* /opt/pf9/pf9-kube/
+        systemctl start pf9-hostagent.service
+        echo "DEV mode: Restarted the services"
     fi
 }
 

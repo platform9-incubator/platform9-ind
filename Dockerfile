@@ -32,6 +32,8 @@ chmod +x get_cli; \
 mv get_cli /root/get_cli; \
 mkdir -p /root/local/agent /root/local/nodelet;
 
+RUN yum install -y git
+
 # Install go and delve
 RUN curl -O https://dl.google.com/go/go1.13.3.linux-amd64.tar.gz; \
 sudo tar -C /usr/local -xzf go1.13.3.linux-amd64.tar.gz; \
