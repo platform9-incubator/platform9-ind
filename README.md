@@ -94,6 +94,7 @@ However multi-node deployments on the same are flaky. I would recommend creating
 |    1   |    0   |   Flannel  |     Yes    |   Yes   |   3  |         6GB         |  30GB |
 |    1   |    0   |   Calico   |     Yes    |   Yes   |   3  |         6GB         |  50GB |
 |    3   |    1   |   Flannel  |     Yes    |   Yes   |   4  |         15GB        | 100GB |
+|    3   |    1   |   Calico  |     Yes    |   Yes   |   4  |         15GB        | 100GB |
 
 ## Using a VM on dogfood
 
