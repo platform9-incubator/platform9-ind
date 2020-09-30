@@ -112,10 +112,11 @@ function patch_pmk_files() {
 setup_dev_if_necessary() {
     if [ "x${DEV}" != "x" ]; then
         echo "DEV is enabled, so stopping services and patching files"
-        systemctl stop pf9-hostagent.service
-        systemctl stop pf9-nodeletd.service
+        systemctl stop pf9-nodeletd.service pf9-hostagent.service
         yes | cp /root/local/nodelet/nodeletd /opt/pf9/nodelet/nodeletd
         yes | cp -Rf /root/local/agent/root/opt/pf9/pf9-kube/* /opt/pf9/pf9-kube/
+        mkdir -p /go/src/github.com/platform9
+        ln -s /root/local/agent/nodelet/ /go/src/github.com/platform9/
         systemctl start pf9-hostagent.service
         echo "DEV mode: Restarted the services"
     fi

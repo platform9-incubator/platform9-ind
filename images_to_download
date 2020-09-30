@@ -7,7 +7,7 @@ kubernetesui/dashboard:v2.0.0
 calico/cni:v3.14.1
 grafana/grafana:6.3.2
 calico/node:v3.14.1
-gcr.io/etcd-development/etcd:v3.2.30
+gcr.io/etcd-development/etcd:v3.3.22
 k8s.gcr.io/coredns:1.6.5
 kubernetesui/metrics-scraper:v1.0.4
 k8s.gcr.io/metrics-server-amd64:v0.3.6
