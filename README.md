@@ -88,6 +88,15 @@ Single node deployments worked fine on 2017 13"Macbook Pro with i5 processor and
 
 However multi-node deployments on the same are flaky. I would recommend creating a single VM on df.platform9.net for running multi-node setups. The VM can also be used as a dev VM.
 
+|        |        | Deployment |            |         |      | System Requirements |       |
+|:------:|:------:|:----------:|:----------:|:-------:|:----:|:-------------------:|:-----:|
+| **Master** | **Worker** |     **CNI**    | **Monitoring** | **MetalLB** | **CPUs** |        **Memory**       |  **Disk** |
+|    1   |    0   |   Flannel  |     Yes    |   Yes   |   3  |         6GB         |  30GB |
+|    1   |    0   |   Calico   |     Yes    |   Yes   |   3  |         6GB         |  50GB |
+|    3   |    1   |   Flannel  |     Yes    |   Yes   |   4  |         15GB        | 100GB |
+
+## Using a VM on dogfood
+
 Image: ubuntu16-pmk (57089a60-16ea-4668-a5dd-4cc3b62b1e96)
 
 Flavor: m3.xlarge (4 VCPUs / 15GB RAM)
@@ -98,10 +107,13 @@ Network: Any network is OK to use since we don't use host networking for contain
 
 Security group: Set it to "allow all" security group for the tenant in which you are creating the VM.
 
-
-|        |        | Deployment |            |         |      | System Requirements |       |
-|:------:|:------:|:----------:|:----------:|:-------:|:----:|:-------------------:|:-----:|
-| **Master** | **Worker** |     **CNI**    | **Monitoring** | **MetalLB** | **CPUs** |        **Memory**       |  **Disk** |
-|    1   |    0   |   Flannel  |     Yes    |   Yes   |   3  |         6GB         |  30GB |
-|    1   |    0   |   Calico   |     Yes    |   Yes   |   3  |         6GB         |  50GB |
-|    3   |    1   |   Flannel  |     Yes    |   Yes   |   4  |         15GB        | 100GB |
+NOTE:
+1. For this VM image you will need to download the docker-compose as mentioned above.
+2. After installing docker (`sudo apt install docker.io`), you will need to configure docker to use a lower MTU as the VM is running in OpenStack. To do that add - 
+   ```
+   {
+     "experimental": true,
+     "mtu": 1350
+   }
+   ```
+   to `/etc/docker/daemon.json` and restart the docker daemon as `sudo systemctl restart docker`
