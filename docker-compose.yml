@@ -4,10 +4,8 @@ services:
     build: .
     image: centos7-pind
     volumes:
-      - /sys/fs/cgroup:/sys/fs/cgroup:ro
-      - type: bind
-        source: ./container_images
-        target: /container_images
+      - "/sys/fs/cgroup:/sys/fs/cgroup:ro"
+      - "./container_images:/container_images"
     tmpfs: /run
     privileged: true
     env_file: ./env
@@ -16,5 +14,5 @@ services:
     deploy:
       resources:
         limits:
-          cpus: 2
+          cpus: "2"
           memory: "2048M"
