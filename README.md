@@ -72,15 +72,65 @@ export NUM_CONTAINERS=<N>
 make dev
 ```
 
-## Debugging nodelet inside the container
+## Debugging Nodelet inside the container
 
-Follow the steps under "To start container with custom pf9-qbert branch". The containerized hosts will have golang 1.13 and delve debugger pre-installed. Nodelet codebase is also mounted to appropriate directories on the container so that delve shows the code being executed.
+Follow the steps under "To start container with custom pf9-qbert branch". The containerized hosts will have golang 1.13 and delve debugger pre-installed. Nodelet codebase is also mounted to appropriate directories on the container so that delve shows the code being executed. A debugger systemd is also pre-started which attaches dlv to running nodeletd in headless mode and listens on port 40000.
+
+Since we are exposing port 40000 statically outside the container it is recommended to start just ***one*** container. 
+
+### To debug directly on container
 ```
 docker exec -ti <platform9-in-docker-container> bash
-ps aux | grep nodeletd
-dlv attach <pid-from-above-command>
+systemctl stop pf9-nodeletd-debugger.service
+dlv attach `ps aux | grep /opt/pf9/nodelet/nodeletd | grep -v grep | grep -v log | awk '{print $2}' | xargs`
 ```
 
+### To debug from outside the container
+You will need the dlv binary installed on your host for this.
+```
+dlv connect 127.0.0.1:40000
+```
+
+### To debug from outside the container using VS Code
+Add the following debug launch config
+```
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug-nodeletd",
+            "type": "go",
+            "request": "attach",
+            "mode": "remote",
+            "remotePath": "/go/src/github.com/platform9/nodelet",
+            "port": 40000,
+            "host": "127.0.0.1"
+        }
+    ]
+}
+```
+Debugging from VS Code should work as usual now.
+
+NOTE:
+
+1. Clicking "restart" from the VS Code debug menu borks the debugger and no breakpoints will be hit. When that happens, exec into the container and restart the `pf9-nodeletd` and `pf9-nodeletd-debugger` services.
+
+## Using the generated kubeconfig
+After downloading the kubeconfig from the UI to your host, you will need to modify the server field of the kubeconfig so that kubectl can access the kube apiserver running inside the container. Port 443 is exposed on all containerized hosts as a random port on the host. 
+
+1. Get the host port to connect by running the following command
+```
+docker inspect <master-node-container-name-or-id> | grep HostPort | grep -v 40000 | grep -v '""'
+```
+
+2. Edit the downloaded kubeconfig
+
+Update the server field in kubeconfig to connect to `127.0.0.1:<host-port>`
+```
+server: 'https://127.0.0.1:<host-port>'
+```
+
+`kubectl` commands should now work as expected from the host.
 
 ## System requirements
 

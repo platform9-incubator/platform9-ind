@@ -107,6 +107,7 @@ function patch_pmk_files() {
 
     ## Remove the getenforce check since there is no getenforce in containers
     sed 's|ret=`getenforce`|ret="Permissive"|' /opt/pf9/pf9-kube/os_centos.sh -i
+    echo "Patched PMK files"
 }
 
 setup_dev_if_necessary() {
@@ -114,7 +115,9 @@ setup_dev_if_necessary() {
         echo "DEV is enabled, so stopping services and patching files"
         systemctl stop pf9-nodeletd.service pf9-hostagent.service
         yes | cp /root/local/nodelet/nodeletd /opt/pf9/nodelet/nodeletd
+        mv /opt/pf9/pf9-kube/defaults.env /opt/pf9/pf9-kube/defaults.env.bk
         yes | cp -Rf /root/local/agent/root/opt/pf9/pf9-kube/* /opt/pf9/pf9-kube/
+        mv /opt/pf9/pf9-kube/defaults.env.bk /opt/pf9/pf9-kube/defaults.env
         mkdir -p /go/src/github.com/platform9
         ln -s /root/local/agent/nodelet/ /go/src/github.com/platform9/
         systemctl start pf9-hostagent.service
@@ -132,8 +135,8 @@ prep_container
 install_and_configure_pf9ctl
 patch_pf9ctl
 prep_node
+setup_dev_if_necessary
 patch_pmk_files
-setup_dev_if_necessary &
 load_container_images
 
 echo "Node is ready to be added to k8s cluster at ${PF9ACT}"

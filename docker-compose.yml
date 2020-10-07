@@ -11,6 +11,8 @@ services:
     env_file: ./env
     environment:
       container: docker
+    ports:
+      - "443"
     deploy:
       resources:
         limits:
