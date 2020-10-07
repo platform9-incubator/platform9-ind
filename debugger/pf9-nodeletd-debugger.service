@@ -1,0 +1,15 @@
+[Unit]
+Description=Platform9 Kubernetes Management Agent Debugger
+ConditionPathExists=/opt/pf9/nodelet/nodeletd
+After=network.target pf9-nodeletd.service
+Wants=pf9-nodeletd.service
+
+[Service]
+Type=simple
+ExecStart=/bin/bash -c /pf9-nodeletd-debugger.sh >> /var/log/pf9/nodelet-debugger.log 2>&1
+PIDFile=/var/run/pf9-nodeletd-debugger.pid
+Restart=always
+RestartSec=500ms
+
+[Install]
+WantedBy=multi-user.target

@@ -118,6 +118,12 @@ setup_dev_if_necessary() {
         mkdir -p /go/src/github.com/platform9
         ln -s /root/local/agent/nodelet/ /go/src/github.com/platform9/
         systemctl start pf9-hostagent.service
+        cp /root/local/debugger/pf9-nodeletd-debugger.sh /pf9-nodeletd-debugger.sh
+        chmod +x /pf9-nodeletd-debugger.sh
+        cp /root/local/debugger/pf9-nodeletd-debugger.service /lib/systemd/system/
+        systemctl daemon-reload
+        systemctl enable pf9-nodeletd-debugger.service
+        systemctl start pf9-nodeletd-debugger.service
         echo "DEV mode: Restarted the services"
     fi
 }
