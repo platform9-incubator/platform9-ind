@@ -32,10 +32,14 @@ function prep_container() {
     usermod -a -G pf9group pf9
     groupadd docker
     usermod -a -G docker pf9
+
+    local KUBE_OVERRIDE=/etc/pf9/kube_override.env
     
     ## This has to be done first to prevent PF9 components from changing docker config
     mkdir -p /etc/pf9/
-    echo 'export PF9_MANAGED_DOCKER="false"' >> /etc/pf9/kube_override.env
+    echo 'export PF9_MANAGED_DOCKER="false"' >> $KUBE_OVERRIDE
+    echo 'export ALLOW_SWAP="yes"' >> $KUBE_OVERRIDE
+    echo 'export MAX_NAT_CONN="0"' >> $KUBE_OVERRIDE
     chown -R pf9:pf9group /etc/pf9/
     
     ## PMK scripts expect the docker binary to be at /usr/bin/docker
@@ -58,8 +62,8 @@ function prep_container() {
     chmod 777 /var/run/docker.sock
     
     ## Mock the getenforce since it is not present in containers
-    echo 'echo Permissive' > /usr/local/bin/getenforce
-    chmod 777 /usr/local/bin/getenforce
+    echo 'echo Permissive' > /usr/sbin/getenforce
+    chmod 777 /usr/sbin/getenforce
 
     ## Change loopback DNS to 8.8.8.8
     echo -e 'nameserver 8.8.8.8\noptions ndots:0' > /etc/resolv.conf
@@ -117,6 +121,7 @@ setup_dev_if_necessary() {
         yes | cp /root/local/nodelet/nodeletd /opt/pf9/nodelet/nodeletd
         mv /opt/pf9/pf9-kube/defaults.env /opt/pf9/pf9-kube/defaults.env.bk
         yes | cp -Rf /root/local/agent/root/opt/pf9/pf9-kube/* /opt/pf9/pf9-kube/
+        yes | cp -Rf /root/local/agent/root/opt/pf9/hostagent/extensions/* /opt/pf9/hostagent/extensions/
         mv /opt/pf9/pf9-kube/defaults.env.bk /opt/pf9/pf9-kube/defaults.env
         mkdir -p /go/src/github.com/platform9
         ln -s /root/local/agent/nodelet/ /go/src/github.com/platform9/
@@ -136,7 +141,7 @@ install_and_configure_pf9ctl
 patch_pf9ctl
 prep_node
 setup_dev_if_necessary
-patch_pmk_files
+#patch_pmk_files
 load_container_images
 
 echo "Node is ready to be added to k8s cluster at ${PF9ACT}"
