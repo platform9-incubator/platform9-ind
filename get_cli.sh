@@ -34,13 +34,22 @@ function prep_container() {
     usermod -a -G docker pf9
 
     local KUBE_OVERRIDE=/etc/pf9/kube_override.env
+    local SYSCTL_CONF=/etc/sysctl.conf
     
     ## This has to be done first to prevent PF9 components from changing docker config
     mkdir -p /etc/pf9/
     echo 'export PF9_MANAGED_DOCKER="false"' >> $KUBE_OVERRIDE
-    echo 'export ALLOW_SWAP="yes"' >> $KUBE_OVERRIDE
+    echo 'export ALLOW_SWAP="true"' >> $KUBE_OVERRIDE
     echo 'export MAX_NAT_CONN="0"' >> $KUBE_OVERRIDE
     chown -R pf9:pf9group /etc/pf9/
+
+    # Enable IPv6 support
+    echo 'net.ipv6.conf.all.disable_ipv6 = 0' >> $SYSCTL_CONF
+    echo 'net.ipv6.conf.default.disable_ipv6 = 0' >> $SYSCTL_CONF
+    echo 'net.ipv6.conf.docker0.disable_ipv6 = 0' >> $SYSCTL_CONF
+    echo 'net.ipv6.conf.ip6tnl0.disable_ipv6 = 0' >> $SYSCTL_CONF
+    echo 'net.ipv6.conf.lo.disable_ipv6 = 0' >> $SYSCTL_CONF
+    sysctl -p
     
     ## PMK scripts expect the docker binary to be at /usr/bin/docker
     ln -s /usr/local/bin/docker /usr/bin/docker
