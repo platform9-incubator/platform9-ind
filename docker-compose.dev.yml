@@ -4,8 +4,7 @@ services:
     ports:
       - "40000:40000"
     volumes:
-      - "../pf9-qbert/agent:/root/local/agent"
-      - "../pf9-qbert/build/pf9-kube/nodelet/bin:/root/local/nodelet"
+      - "../pf9-kube:/root/local/pf9-kube"
       - "./debugger:/root/local/debugger"
     environment:
       DEV: "true"

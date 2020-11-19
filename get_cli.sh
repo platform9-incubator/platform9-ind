@@ -91,6 +91,7 @@ function install_and_configure_pf9ctl() {
 function patch_pf9ctl() {
     ## Docker for Mac always injects swap that cannot be unmounted or turned off :(
     echo "  ignore_errors: true" >> /root/pf9/pf9-venv/lib/python3.6/site-packages/pf9/express/roles/disable-swap/tasks/main.yml
+    echo "  ignore_errors: true" >> /root/pf9/pf9-venv/lib/python2.7/site-packages/pf9/express/roles/disable-swap/tasks/main.yml
 
     ## We are installing python3.6 but CLI does not fully support python3 yet
     for file in /root/pf9/pf9-venv/lib/python3.6/site-packages/pf9/express/roles/ntp/tasks/main.yml /root/pf9/pf9-venv/lib/python3.6/site-packages/pf9/express/roles/common/tasks/redhat.yml; do
@@ -104,36 +105,18 @@ function prep_node() {
     ' | pf9ctl cluster prep-node
 }
 
-function patch_pmk_files() {
-    ## Unconditionally return that swap is turned off from the tackboard script
-    sed 's|swapStat="{ \\"enabled\\": \\"true\\" }"|swapStat="{ \\"enabled\\": \\"false\\" }"|' /opt/pf9/pf9-kube/diagnostics_utils/node_check.sh -i
-
-    ## Remove the swap check from gen_certs.sh
-    sed -e '/check_swap_disabled/ s/^#*/#/' /opt/pf9/pf9-kube/base_scripts/gen_certs.sh -i
-
-    ## Set the kubelet flag failSwapOn to false to allow kubelet to run with swap enabled
-    sed '/^clusterDomain:.*/a failSwapOn: false' /opt/pf9/pf9-kube/utils.sh -i
-
-    ## conntrack-max-per-core needs to be set to 0 for kube-proxy container to come up.
-    ## Without this the container fails to start as it tries to modify a read-only sysctl value.
-    sed '/^\s*--proxy-mode.*/a\                              --conntrack-max-per-core 0 \\' /opt/pf9/pf9-kube/utils.sh -i
-
-    ## Remove the getenforce check since there is no getenforce in containers
-    sed 's|ret=`getenforce`|ret="Permissive"|' /opt/pf9/pf9-kube/os_centos.sh -i
-    echo "Patched PMK files"
-}
-
 setup_dev_if_necessary() {
     if [ "x${DEV}" != "x" ]; then
         echo "DEV is enabled, so stopping services and patching files"
         systemctl stop pf9-nodeletd.service pf9-hostagent.service
-        yes | cp /root/local/nodelet/nodeletd /opt/pf9/nodelet/nodeletd
+        dev_dir=/root/local/pf9-kube
+        yes | cp ${dev_dir}/build/pf9-kube/nodelet/bin/nodeletd /opt/pf9/nodelet/nodeletd
         mv /opt/pf9/pf9-kube/defaults.env /opt/pf9/pf9-kube/defaults.env.bk
-        yes | cp -Rf /root/local/agent/root/opt/pf9/pf9-kube/* /opt/pf9/pf9-kube/
-        yes | cp -Rf /root/local/agent/root/opt/pf9/hostagent/extensions/* /opt/pf9/hostagent/extensions/
+        yes | cp -Rf ${dev_dir}/root/opt/pf9/pf9-kube/* /opt/pf9/pf9-kube/
+        yes | cp -Rf ${dev_dir}/root/opt/pf9/hostagent/extensions/* /opt/pf9/hostagent/extensions/
         mv /opt/pf9/pf9-kube/defaults.env.bk /opt/pf9/pf9-kube/defaults.env
         mkdir -p /go/src/github.com/platform9
-        ln -s /root/local/agent/nodelet/ /go/src/github.com/platform9/
+        ln -s $dev_dir/nodelet/ /go/src/github.com/platform9/
         systemctl start pf9-hostagent.service
         cp /root/local/debugger/pf9-nodeletd-debugger.sh /pf9-nodeletd-debugger.sh
         chmod +x /pf9-nodeletd-debugger.sh
@@ -150,7 +133,6 @@ install_and_configure_pf9ctl
 patch_pf9ctl
 prep_node
 setup_dev_if_necessary
-#patch_pmk_files
 load_container_images
 
 echo "Node is ready to be added to k8s cluster at ${PF9ACT}"
